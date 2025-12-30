@@ -1,0 +1,8 @@
+Filtered test set: 38430 triples (from original dataset)
+Evaluating: 100%|████████████████████████████████████████████████████████████████████████████████████| 38430/38430 [16:14<00:00, 39.44it/s] 
+
+Evaluation results (filtered):
+MRR: 0.4285
+Hits@1: 0.3602
+Hits@3: 0.4598
+Hits@10: 0.5548
