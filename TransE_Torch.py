@@ -323,7 +323,7 @@ def save_outputs(output_dir, losses, entity2id, relation2id, model: TransE):
     
     
     
-def save_model(model, entity2id, relation2id, output_dir="outputs"):
+def save_model(model, entity2id, relation2id, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     checkpoint = {
@@ -337,7 +337,7 @@ def save_model(model, entity2id, relation2id, output_dir="outputs"):
     }
 
     torch.save(checkpoint, os.path.join(output_dir, "transe_model.pt"))
-    print("Model saved to outputs/transe_model.pt")
+    print(f"Model saved to {output_dir}/transe_model.pt")
 
 
 # ----------------------------
@@ -395,4 +395,4 @@ if __name__ == "__main__":
     )
 
     save_outputs(OUTPUT_DIR, losses, entity2id, relation2id, model)
-    save_model(model, entity2id, relation2id, output_dir=OUTPUT_DIR)
+    save_model(model, entity2id, relation2id,OUTPUT_DIR)

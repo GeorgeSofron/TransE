@@ -176,15 +176,17 @@ if __name__ == "__main__":
     DEVICE = "cpu"  # change to "cuda" if available
     BATCH_SIZE = 256  # Batch size for evaluation
 
-    MODEL_PATH = "outputs/transe_model.pt"
+    MODEL_PATH = "outputs_transe/transe_model.pt"
+    DATA_DIR = "data/transe"
+    OUTPUT_PATH = "outputs_transe/Evaluation.txt"
 
     # Load model
     model, entity2id, relation2id = load_model(MODEL_PATH, DEVICE)
     num_entities = len(entity2id)
 
     # Load data
-    train_df = load_triples("data/train.txt")  # Load training data
-    test_df = load_triples("data/test.txt")  # Load test data
+    train_df = load_triples(f"{DATA_DIR}/train.txt")
+    test_df = load_triples(f"{DATA_DIR}/test.txt")
     
     # Filter test data to only include entities/relations known to the model
     test_df = test_df[
@@ -202,6 +204,19 @@ if __name__ == "__main__":
     # This ensures other true test triples don't unfairly inflate ranks
     all_true = triples_to_id_set(train_df, entity2id, relation2id)
     all_true |= triples_to_id_set(test_df, entity2id, relation2id)
+    
+    # Also load validation set if available
+    try:
+        valid_df = load_triples(f"{DATA_DIR}/valid.txt")
+        valid_df_filtered = valid_df[
+            (valid_df["source"].isin(entity2id.keys())) &
+            (valid_df["relation"].isin(relation2id.keys())) &
+            (valid_df["target"].isin(entity2id.keys()))
+        ]
+        all_true |= triples_to_id_set(valid_df_filtered, entity2id, relation2id)
+        print(f"Validation triples loaded: {len(valid_df_filtered)}")
+    except FileNotFoundError:
+        print("No validation file found, proceeding without it.")
 
     # Evaluate with batched computation
     metrics = evaluate(
@@ -216,3 +231,13 @@ if __name__ == "__main__":
     print("\nEvaluation results (filtered):")
     for k, v in metrics.items():
         print(f"{k}: {v:.4f}")
+    
+    # Save results
+    import os
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+    with open(OUTPUT_PATH, "w") as f:
+        f.write("TransE Evaluation Results (Filtered Ranking)\n")
+        f.write("=" * 50 + "\n\n")
+        for k, v in metrics.items():
+            f.write(f"{k}: {v:.4f}\n")
+    print(f"\nResults saved to {OUTPUT_PATH}")
