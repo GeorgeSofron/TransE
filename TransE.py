@@ -138,7 +138,7 @@ if __name__ == "__main__":
     results, tracker = train_transe(
         training_tf,
         testing_tf,
-        epochs=50
+        epochs=100
     )
 
     save_training_outputs(results, output_dir=OUTPUT_DIR)
