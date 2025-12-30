@@ -302,52 +302,62 @@ def predict_heads(
     return results
 
 
-def print_results(results: list, model_type: str):
+def print_results(results: list, model_type: str, file=None):
     """Pretty print scoring results."""
-    print("\n" + "=" * 70)
-    print("FACT SCORING RESULTS")
-    print("=" * 70)
+    def output(text=""):
+        print(text)
+        if file:
+            file.write(text + "\n")
+    
+    output("\n" + "=" * 70)
+    output("FACT SCORING RESULTS")
+    output("=" * 70)
     
     if model_type == "TransE":
-        print("(TransE: lower scores = more plausible)")
+        output("(TransE: lower scores = more plausible)")
     else:
-        print(f"({model_type}: higher scores = more plausible)")
+        output(f"({model_type}: higher scores = more plausible)")
     
-    print("-" * 70)
+    output("-" * 70)
     
     for fact, score, status in results:
         head, rel, tail = fact
         if score is not None:
-            print(f"  ({head}, {rel}, {tail})")
-            print(f"    Score: {score:.4f}")
+            output(f"  ({head}, {rel}, {tail})")
+            output(f"    Score: {score:.4f}")
         else:
-            print(f"  ({head}, {rel}, {tail})")
-            print(f"    Error: {status}")
-        print()
+            output(f"  ({head}, {rel}, {tail})")
+            output(f"    Error: {status}")
+        output()
 
 
-def print_predictions(predictions: list, query_type: str, query: tuple, model_type: str):
+def print_predictions(predictions: list, query_type: str, query: tuple, model_type: str, file=None):
     """Pretty print prediction results."""
-    print("\n" + "=" * 70)
+    def output(text=""):
+        print(text)
+        if file:
+            file.write(text + "\n")
+    
+    output("\n" + "=" * 70)
     
     if query_type == "tail":
         head, rel = query
-        print(f"TOP TAIL PREDICTIONS for ({head}, {rel}, ?)")
+        output(f"TOP TAIL PREDICTIONS for ({head}, {rel}, ?)")
     else:
         rel, tail = query
-        print(f"TOP HEAD PREDICTIONS for (?, {rel}, {tail})")
+        output(f"TOP HEAD PREDICTIONS for (?, {rel}, {tail})")
     
-    print("=" * 70)
+    output("=" * 70)
     
     if model_type == "TransE":
-        print("(TransE: lower scores = more plausible)")
+        output("(TransE: lower scores = more plausible)")
     else:
-        print(f"({model_type}: higher scores = more plausible)")
+        output(f"({model_type}: higher scores = more plausible)")
     
-    print("-" * 70)
+    output("-" * 70)
     
     for rank, (entity, score) in enumerate(predictions, 1):
-        print(f"  {rank:3d}. {entity:40s} (score: {score:.4f})")
+        output(f"  {rank:3d}. {entity:40s} (score: {score:.4f})")
 
 
 # ----------------------------
@@ -358,9 +368,13 @@ if __name__ == "__main__":
     DEVICE = "cpu"
     
     # Choose which model to use
-    #MODEL_PATH = "outputs_transe/transe_model.pt"  # TransE
-    # MODEL_PATH = "outputs_complex/complex_model.pt"  # ComplEx
-    MODEL_PATH = "outputs_trimodel/trimodel_model.pt"  # TriModel
+    MODEL_PATH = "outputs_transe/transe_model.pt"  # TransE
+    #MODEL_PATH = "outputs_complex/complex_model.pt"  # ComplEx
+    #MODEL_PATH = "outputs_trimodel/trimodel_model.pt"  # TriModel
+    
+    # Output file path - automatically derived from MODEL_PATH
+    OUTPUT_DIR = os.path.dirname(MODEL_PATH)
+    OUTPUT_FILE = os.path.join(OUTPUT_DIR, "predictions.txt")
     
     # Load model
     print(f"Loading model from: {MODEL_PATH}")
@@ -369,6 +383,17 @@ if __name__ == "__main__":
     print(f"  Entities:  {len(entity2id):,}")
     print(f"  Relations: {len(relation2id):,}")
     print(f"  Relations available: {list(relation2id.keys())}")
+    
+    # Open output file
+    if OUTPUT_FILE:
+        os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+        outfile = open(OUTPUT_FILE, "w", encoding="utf-8")
+        outfile.write(f"Fact Predictions - {model_type}\n")
+        outfile.write(f"Model: {MODEL_PATH}\n")
+        outfile.write(f"Entities: {len(entity2id):,}, Relations: {len(relation2id):,}\n")
+        outfile.write("=" * 70 + "\n")
+    else:
+        outfile = None
     
     # ----------------------------
     # Example 1: Score specific facts
@@ -383,6 +408,10 @@ if __name__ == "__main__":
     print("\n" + "#" * 70)
     print("SCORING SPECIFIC FACTS")
     print("#" * 70)
+    if outfile:
+        outfile.write("\n" + "#" * 70 + "\n")
+        outfile.write("SCORING SPECIFIC FACTS\n")
+        outfile.write("#" * 70 + "\n")
     
     results = score_facts(
         model, 
@@ -392,7 +421,7 @@ if __name__ == "__main__":
         model_type,
         device=DEVICE
     )
-    print_results(results, model_type)
+    print_results(results, model_type, file=outfile)
     
     # ----------------------------
     # Example 2: Predict tail entities
@@ -400,6 +429,10 @@ if __name__ == "__main__":
     print("\n" + "#" * 70)
     print("PREDICTING TAIL ENTITIES")
     print("#" * 70)
+    if outfile:
+        outfile.write("\n" + "#" * 70 + "\n")
+        outfile.write("PREDICTING TAIL ENTITIES\n")
+        outfile.write("#" * 70 + "\n")
     
     # Query: What drugs target protein Q9H0K6?
     # (?, DRUG_TARGET, Q9H0K6) - predict head
@@ -412,7 +445,7 @@ if __name__ == "__main__":
             entity2id, relation2id, model_type,
             top_k=10, device=DEVICE
         )
-        print_predictions(tail_predictions, "tail", (head_entity, relation), model_type)
+        print_predictions(tail_predictions, "tail", (head_entity, relation), model_type, file=outfile)
     except ValueError as e:
         print(f"Error: {e}")
     
@@ -422,6 +455,10 @@ if __name__ == "__main__":
     print("\n" + "#" * 70)
     print("PREDICTING HEAD ENTITIES")
     print("#" * 70)
+    if outfile:
+        outfile.write("\n" + "#" * 70 + "\n")
+        outfile.write("PREDICTING HEAD ENTITIES\n")
+        outfile.write("#" * 70 + "\n")
     
     try:
         relation = "DRUG_TARGET"
@@ -432,6 +469,11 @@ if __name__ == "__main__":
             entity2id, relation2id, model_type,
             top_k=10, device=DEVICE
         )
-        print_predictions(head_predictions, "head", (relation, tail_entity), model_type)
+        print_predictions(head_predictions, "head", (relation, tail_entity), model_type, file=outfile)
     except ValueError as e:
         print(f"Error: {e}")
+    
+    # Close output file
+    if outfile:
+        outfile.close()
+        print(f"\nResults saved to: {OUTPUT_FILE}")
