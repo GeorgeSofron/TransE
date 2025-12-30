@@ -298,14 +298,14 @@ if __name__ == "__main__":
     set_seed(42)
     
     # Configuration - choose model
-    #MODEL_PATH = "outputs_transe/transe_model.pt"
-    #DATA_DIR = "data/transe"
+    MODEL_PATH = "outputs_transe/transe_model.pt"
+    DATA_DIR = "data/transe"
     
     #MODEL_PATH = "outputs_complex/complex_model.pt"
     #DATA_DIR = "data/complex"
     
-    MODEL_PATH = "outputs_trimodel/trimodel_model.pt"
-    DATA_DIR = "data/trimodel"
+    #MODEL_PATH = "outputs_trimodel/trimodel_model.pt"
+    #DATA_DIR = "data/trimodel"
     
     DEVICE = "cpu"
     NEG_RATIO = 1  # Number of negatives per positive
