@@ -1,0 +1,35 @@
+DRUG-TARGET INTERACTION PREDICTION EVALUATION
+============================================================
+
+Negative Ratio: 10:1
+
+TransE:
+  AUC-ROC:          0.7926
+  AUC-PR:           0.4568
+  Best F1:          0.4453
+  Precision@Best:   0.5301
+  Recall@Best:      0.3839
+  Best Threshold:   -11.6975
+  Test Positives:   2894
+  Test Negatives:   28940
+
+ComplEx:
+  AUC-ROC:          0.8559
+  AUC-PR:           0.6493
+  Best F1:          0.6174
+  Precision@Best:   0.7460
+  Recall@Best:      0.5266
+  Best Threshold:   -0.5878
+  Test Positives:   2894
+  Test Negatives:   28940
+
+TriModel:
+  AUC-ROC:          0.8558
+  AUC-PR:           0.6361
+  Best F1:          0.5958
+  Precision@Best:   0.6961
+  Recall@Best:      0.5207
+  Best Threshold:   1.4456
+  Test Positives:   2894
+  Test Negatives:   28940
+
